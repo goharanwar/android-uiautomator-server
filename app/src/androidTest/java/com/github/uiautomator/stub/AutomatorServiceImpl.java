@@ -254,12 +254,26 @@ public class AutomatorServiceImpl implements AutomatorService {
      * @param filename where the PNG should be written to
      * @param scale    scale the screenshot down if needed; 1.0f for original size
      * @param quality  quality of the PNG compression; range: 0-100
+     * @param saveInExternalStorage should save screenshot in external storage or not. Useful for phones (e.g Samsung S8, S6 - 7.0 API 24) which have permission issues
      * @return the file name of the screenshot. null if failed.
      * @throws com.github.uiautomator.stub.NotImplementedException
      */
     @Override
-    public String takeScreenshot(String filename, float scale, int quality) throws NotImplementedException {
-        File f = new File(InstrumentationRegistry.getTargetContext().getFilesDir(), filename);
+    public String takeScreenshot(String filename, float scale, int quality, boolean saveInExternalStorage) throws NotImplementedException {
+
+        File f;
+
+        if (saveInExternalStorage == true) {
+            File externalStorageRoot = android.os.Environment.getExternalStorageDirectory();
+            File dir = new File (externalStorageRoot.getAbsolutePath() + "/com.github.uiautomator/files");
+            dir.mkdirs();
+            f = new File (dir, filename);
+        } else {
+
+            f = new File(InstrumentationRegistry.getTargetContext().getFilesDir(), filename);
+        }
+
+
         device.takeScreenshot(f, scale, quality);
         if (f.exists()) return f.getAbsolutePath();
         return null;
