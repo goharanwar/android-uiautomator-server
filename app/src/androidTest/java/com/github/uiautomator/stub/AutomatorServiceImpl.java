@@ -24,6 +24,8 @@
 package com.github.uiautomator.stub;
 
 import android.app.UiAutomation;
+import android.content.res.Configuration;
+import android.graphics.Bitmap;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.RemoteException;
@@ -40,13 +42,16 @@ import android.support.test.uiautomator.UiObjectNotFoundException;
 import android.support.test.uiautomator.UiScrollable;
 import android.support.test.uiautomator.UiSelector;
 import android.support.test.uiautomator.Until;
+import android.util.Base64;
 import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
+import android.view.Surface;
 
 import com.github.uiautomator.ToastHelper;
 import com.github.uiautomator.stub.watcher.ClickUiObjectWatcher;
 import com.github.uiautomator.stub.watcher.PressKeysWatcher;
+
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -67,6 +72,8 @@ public class AutomatorServiceImpl implements AutomatorService {
 
     private UiDevice device;
     private UiAutomation uiAutomation;
+    private static final String TAG = "AutomatorServiceImpl";
+
 
     public AutomatorServiceImpl() {
         this.uiAutomation = InstrumentationRegistry.getInstrumentation().getUiAutomation();
@@ -248,6 +255,16 @@ public class AutomatorServiceImpl implements AutomatorService {
         return null;
     }
 
+    @Override
+    public String getDisplayOrientation() {
+        if(device.getDisplayRotation() == Surface.ROTATION_0 || device.getDisplayRotation() == Surface.ROTATION_180) {
+            return "portrait";
+        } else if(device.getDisplayRotation() == Surface.ROTATION_90 || device.getDisplayRotation() == Surface.ROTATION_270) {
+            return "landscape";
+        }
+        return "unknown";
+    }
+
     /**
      * Take a screenshot of current window and store it as PNG The screenshot is adjusted per screen rotation
      *
@@ -273,10 +290,68 @@ public class AutomatorServiceImpl implements AutomatorService {
             f = new File(InstrumentationRegistry.getTargetContext().getFilesDir(), filename);
         }
 
+        android.util.Log.i(TAG, "Starting screenshot " + System.currentTimeMillis());
 
         device.takeScreenshot(f, scale, quality);
-        if (f.exists()) return f.getAbsolutePath();
+
+        android.util.Log.i(TAG, "Finished screenshot " + System.currentTimeMillis());
+
+        if (f.exists())
+            return f.getAbsolutePath();
         return null;
+
+    }
+
+    private String convertBitmap(Bitmap bitmap, float scale, int quality) {
+
+        String result = null;
+
+        android.util.Log.i(TAG, "Converting screenshot to quality " + quality);
+        ByteArrayOutputStream out = null;
+        try {
+            out = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.JPEG, quality, out);
+
+            android.util.Log.i(TAG, "Converted screenshot to JPG");
+            final byte[] data = out.toByteArray();
+            result = Base64.encodeToString(data, Base64.NO_WRAP);
+
+        } catch (Exception e) {
+            android.util.Log.e(TAG, "Converting screenshot failed." + e);
+            throw e;
+        } finally {
+            try {
+                if (out != null) {
+                    out.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        android.util.Log.i(TAG, "Finished converting screenshot.");
+        return result;
+
+    }
+
+    /**
+     * Take a screenshot of current window and returns the JPG as base64 encoded, The screenshot is adjusted per screen rotation
+     *
+     * @param scale    scale the screenshot down if needed; 1.0f for original size
+     * @param quality  quality of the PNG compression; range: 0-100
+     * @return the base64 encoded string of the screenshot. null if failed.
+     * @throws NotImplementedException
+     */
+    @Override
+    public String takeJPGScreenshot(float scale, int quality) throws NotImplementedException {
+
+        android.util.Log.i(TAG, "starting bitmap " + System.currentTimeMillis());
+
+        Bitmap bitmap= InstrumentationRegistry.getInstrumentation().getUiAutomation().takeScreenshot();
+
+        android.util.Log.i(TAG, "created bitmap " + System.currentTimeMillis() + ", " + bitmap.getHeight() + ", " + bitmap.getWidth() );
+
+        return convertBitmap(bitmap, scale, quality);
+
     }
 
     /**

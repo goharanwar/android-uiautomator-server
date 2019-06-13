@@ -159,6 +159,13 @@ public interface AutomatorService {
     String dumpWindowHierarchy(boolean compressed);
 
     /**
+     * get current display orientation
+     *
+     * @return the current display orientation in string portrait or landscape
+     */
+    String getDisplayOrientation();
+
+    /**
      * Take a screenshot of current window and store it as PNG The screenshot is adjusted per screen rotation
      *
      * @param filename where the PNG should be written to
@@ -170,6 +177,18 @@ public interface AutomatorService {
      */
     @JsonRpcErrors({@JsonRpcError(exception = NotImplementedException.class, code = ERROR_CODE_BASE - 3)})
     String takeScreenshot(String filename, float scale, int quality, boolean saveInExternalStorage) throws NotImplementedException;
+
+
+    /**
+     * Take a screenshot of current window and returns the JPG as base64 encoded, The screenshot is adjusted per screen rotation
+     *
+     * @param scale    scale the screenshot down if needed; 1.0f for original size
+     * @param quality  quality of the PNG compression; range: 0-100
+     * @return the base64 encoded string of the screenshot. null if failed.
+     * @throws NotImplementedException
+     */
+    @JsonRpcErrors({@JsonRpcError(exception = NotImplementedException.class, code = ERROR_CODE_BASE - 3)})
+    String takeJPGScreenshot(float scale, int quality) throws NotImplementedException;
 
     /**
      * Disables the sensors and freezes the device rotation at its current rotation state, or enable it.
