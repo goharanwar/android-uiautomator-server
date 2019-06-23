@@ -26,6 +26,7 @@ package com.github.uiautomator.stub;
 import android.app.UiAutomation;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.RemoteException;
@@ -47,17 +48,23 @@ import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.Surface;
+import android.widget.Toast;
 
 import com.github.uiautomator.ToastHelper;
 import com.github.uiautomator.stub.watcher.ClickUiObjectWatcher;
 import com.github.uiautomator.stub.watcher.PressKeysWatcher;
+import com.mesmer.tensorflow.lite.classification.Classifier;
+import com.mesmer.util.Logger;
 
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -73,7 +80,28 @@ public class AutomatorServiceImpl implements AutomatorService {
     private UiDevice device;
     private UiAutomation uiAutomation;
     private static final String TAG = "AutomatorServiceImpl";
+    private Classifier classifier;
+    private final Logger LOGGER = new Logger();
 
+
+    private void recreateClassifier(Classifier.Model model, Classifier.Device device, int numThreads) {
+        if (classifier != null) {
+            android.util.Log.i(TAG, "Closing classifier.");
+            classifier.close();
+            classifier = null;
+        }
+        if (device == Classifier.Device.GPU && model == Classifier.Model.QUANTIZED) {
+            android.util.Log.i(TAG, "Not creating classifier: GPU doesn't support quantized models.");
+            return;
+        }
+        try {
+            //android.util.Log.i(TAG,
+            //        "Creating classifier (model=%s, device=%s, numThreads=%d)", model.toString(), device.name(), numThreads);
+            classifier = Classifier.create(InstrumentationRegistry.getContext(), model, device, numThreads);
+        } catch (IOException e) {
+            android.util.Log.e(TAG, "Failed to create classifier." + e);
+        }
+    }
 
     public AutomatorServiceImpl() {
         this.uiAutomation = InstrumentationRegistry.getInstrumentation().getUiAutomation();
@@ -90,6 +118,9 @@ public class AutomatorServiceImpl implements AutomatorService {
         // default uiAutomation serviceInfo.eventTypes is -1
         // I guess this might be watch all eventTypes
         uiAutomation.setOnAccessibilityEventListener(new AccessibilityEventListener(device, watchers));
+
+        // setup classifier
+        recreateClassifier(Classifier.Model.FLOAT, Classifier.Device.CPU, 2);
     }
 
     /**
@@ -263,6 +294,39 @@ public class AutomatorServiceImpl implements AutomatorService {
             return "landscape";
         }
         return "unknown";
+    }
+
+    @Override
+    public String getScreenClassification() {
+
+        String result = null;
+
+        try {
+            Bitmap bitmap= InstrumentationRegistry.getInstrumentation().getUiAutomation().takeScreenshot();
+
+            Bitmap croppedBitmap = Bitmap.createScaledBitmap(bitmap, 224, 224, false);
+
+            long ts1 = System.currentTimeMillis();
+
+            final List<Classifier.Recognition> results = classifier.recognizeImage(croppedBitmap);
+            LOGGER.e("Classification took: %s", System.currentTimeMillis() - ts1);
+
+            LOGGER.e("Detect: %s", results);
+
+            if (results != null && results.size() >= 3) {
+                Classifier.Recognition recognition = results.get(0);
+                if (recognition != null) {
+                    if (recognition.getTitle() != null) {
+                        result = recognition.getTitle();
+                    }
+                }
+            }
+        } catch (Exception e) {
+            LOGGER.e("Failed to get screen state: " + e.toString());
+
+        }
+
+        return result;
     }
 
     /**

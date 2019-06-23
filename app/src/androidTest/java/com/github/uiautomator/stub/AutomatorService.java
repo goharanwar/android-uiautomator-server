@@ -166,6 +166,13 @@ public interface AutomatorService {
     String getDisplayOrientation();
 
     /**
+     * get current screen loading state
+     *
+     * @return the current screen loading state (loading, loaded, splash)
+     */
+    String getScreenClassification();
+
+    /**
      * Take a screenshot of current window and store it as PNG The screenshot is adjusted per screen rotation
      *
      * @param filename where the PNG should be written to
