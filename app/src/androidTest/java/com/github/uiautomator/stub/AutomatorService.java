@@ -121,6 +121,18 @@ public interface AutomatorService {
      */
     boolean swipe(int startX, int startY, int endX, int endY, int steps);
 
+
+    /**
+     * Performs fast swipe from one coordinate to another using the number of steps, which are calculated with some calculation, In start it starts with high speed and ends with slow speed to achievce speed and perfection.
+     *
+     * @param startX X-axis value for the starting coordinate
+     * @param startY Y-axis value for the starting coordinate
+     * @param endX   X-axis value for the ending coordinate
+     * @param endY   Y-axis value for the ending coordinate
+     * @return false if the operation fails or the coordinates are invalid
+     */
+    boolean fastSwipe(int startX, int startY, int endX, int endY);
+
     /**
      * Performs a swipe between points in the point array
      *

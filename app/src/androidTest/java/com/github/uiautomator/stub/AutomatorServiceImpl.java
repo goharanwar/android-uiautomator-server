@@ -27,6 +27,7 @@ import android.app.UiAutomation;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Rect;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.RemoteException;
@@ -48,6 +49,8 @@ import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.Surface;
+import android.view.ViewConfiguration;
+import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.Toast;
 
 import com.github.uiautomator.ToastHelper;
@@ -63,7 +66,10 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Set;
 import java.util.Timer;
@@ -227,6 +233,118 @@ public class AutomatorServiceImpl implements AutomatorService {
     @Override
     public boolean swipe(int startX, int startY, int endX, int endY, int steps) {
         return device.swipe(startX, startY, endX, endY, steps);
+    }
+
+
+    public boolean fastSwipe(int startX, int startY, int endX, int endY) {
+
+        boolean ret = false;
+
+        int totalDistanceX = endX - startX;
+        int totalDistanceY = endY - startY;
+        int currentPositionX = startX;
+        int currentPositionY = startY;
+        int remainingDistanceX = totalDistanceX;
+        int remainingDistanceY = totalDistanceY;
+
+        try {
+
+            MesmerInteractionController interactionController = MesmerInteractionController.getInteractionController(device);
+
+            // first touch starts exactly at the point requested
+            ret = interactionController.touchDown(startX, startY);
+
+            boolean toExecuteTouchMove = true;
+            int step = 0;
+
+            do {
+
+                int xPosition;
+                int yPosition;
+                step++;
+
+                int maxDistance = Math.max(Math.abs(remainingDistanceX), Math.abs(remainingDistanceY));
+
+                int factor = (maxDistance / 300) + 2;
+
+                if(factor < 3) {
+                    factor = 3;
+                }
+
+                android.util.Log.i(TAG, "calculatedFactor = " + factor);
+
+                int xDistance = (remainingDistanceX / factor);
+                int yDistance = (remainingDistanceY / factor);
+
+                remainingDistanceX = remainingDistanceX - xDistance;
+                remainingDistanceY = remainingDistanceY - yDistance;
+
+                maxDistance = Math.max(Math.abs(xDistance), Math.abs(yDistance));
+
+                if (maxDistance < 2) {
+                    android.util.Log.i(TAG, "Max distance is less than 2");
+                    System.out.println("");
+                    break;
+                }
+
+                if(maxDistance < 3) {
+
+                    android.util.Log.i(TAG, "Max distance is less than 5");
+                    toExecuteTouchMove = false;
+                    xPosition = endX;
+                    yPosition = endY;
+
+                } else {
+
+                    xPosition = currentPositionX + xDistance;
+                    yPosition = currentPositionY + yDistance;
+                }
+
+
+                android.util.Log.i(TAG, "Step = " + step + ", Touch Move x = " + xPosition + ", y = " + yPosition);
+
+                ret &= interactionController.touchMove(xPosition, yPosition);
+
+                currentPositionX = xPosition;
+                currentPositionY = yPosition;
+
+                if (ret == false)
+                    break;
+                // set some known constant delay between steps as without it this
+                // become completely dependent on the speed of the system and results
+                // may vary on different devices. This guarantees at minimum we have
+                // a preset delay.
+
+                SystemClock.sleep(5);
+
+                if (step > 100) {
+                    android.util.Log.e(TAG, "Step count increased from 100");
+                    toExecuteTouchMove = false;
+                }
+
+            } while (toExecuteTouchMove);
+
+            SystemClock.sleep(50);
+
+            ret &= interactionController.touchUp(endX, endY);
+
+//            SystemClock.sleep(wait2);
+//
+//            ret &= interactionController.touchDown((startX + endX) / 2, (startY + endX ) /2 );
+//
+//            SystemClock.sleep(wait3);
+//
+//            ret &= interactionController.touchCancel((startX + endX) / 2, (startY + endX ) /2);
+
+
+
+        } catch (Exception e) {
+            android.util.Log.e(TAG, e.getMessage());
+            e.printStackTrace();
+        }
+
+        return(ret);
+
     }
 
     @Override
