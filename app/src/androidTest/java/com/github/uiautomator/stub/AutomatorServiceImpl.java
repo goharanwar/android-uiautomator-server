@@ -24,10 +24,7 @@
 package com.github.uiautomator.stub;
 
 import android.app.UiAutomation;
-import android.content.res.Configuration;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Rect;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.RemoteException;
@@ -49,9 +46,6 @@ import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.Surface;
-import android.view.ViewConfiguration;
-import android.view.accessibility.AccessibilityNodeInfo;
-import android.widget.Toast;
 
 import com.github.uiautomator.ToastHelper;
 import com.github.uiautomator.stub.watcher.ClickUiObjectWatcher;
@@ -63,13 +57,8 @@ import com.mesmer.util.Logger;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Set;
 import java.util.Timer;
