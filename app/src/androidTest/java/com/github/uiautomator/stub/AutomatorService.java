@@ -428,6 +428,18 @@ public interface AutomatorService {
     boolean click(Selector obj) throws UiObjectNotFoundException;
 
     /**
+     * Performs a click at the provided gravity of the visible bounds of the UI element represented by this UiObject.
+     *
+     * @param obj the target ui object.
+     * @param gravityX x side gravity
+     * @param gravityY y side gravity
+     * @return true id successful else false
+     * @throws UiObjectNotFoundException
+     */
+    @JsonRpcErrors({@JsonRpcError(exception = UiObjectNotFoundException.class, code = ERROR_CODE_BASE - 2)})
+    boolean click(Selector obj, float gravityX, float gravityY) throws UiObjectNotFoundException;
+
+    /**
      * Clicks the bottom and right corner or top and left corner of the UI element
      *
      * @param obj    the target ui object.

@@ -10,6 +10,7 @@ public class MesmerInteractionController {
     private static final String METHOD_TOUCH_DOWN = "touchDown";
     private static final String METHOD_TOUCH_UP = "touchUp";
     private static final String METHOD_TOUCH_MOVE = "touchMove";
+    private static final String CLICK_AND_SYNC = "clickAndSync";
     private static final String INJECT_EVENT = "injectEventSync";
 
     private static final String CLASS_INTERACTION_CONTROLLER = "android.support.test.uiautomator.InteractionController";
@@ -41,6 +42,13 @@ public class MesmerInteractionController {
         Boolean result = (Boolean) invoke(method(CLASS_INTERACTION_CONTROLLER,
                 METHOD_TOUCH_MOVE, int.class, int.class), interactionController, x, y);
         return result;
+    }
+
+    public boolean clickAndSync(final int x, final int y, long timeout) throws Exception {
+        Boolean result = (Boolean) invoke(method(CLASS_INTERACTION_CONTROLLER,
+                CLICK_AND_SYNC, int.class, int.class, long.class), interactionController, x, y, timeout);
+        return result;
+
     }
 
 

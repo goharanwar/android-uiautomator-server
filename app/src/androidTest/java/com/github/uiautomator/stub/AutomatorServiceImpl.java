@@ -50,6 +50,8 @@ import android.view.Surface;
 import com.github.uiautomator.ToastHelper;
 import com.github.uiautomator.stub.watcher.ClickUiObjectWatcher;
 import com.github.uiautomator.stub.watcher.PressKeysWatcher;
+import com.googlecode.jsonrpc4j.JsonRpcError;
+import com.googlecode.jsonrpc4j.JsonRpcErrors;
 import com.mesmer.tensorflow.lite.classification.Classifier;
 import com.mesmer.util.Logger;
 
@@ -876,6 +878,25 @@ public class AutomatorServiceImpl implements AutomatorService {
     public boolean click(Selector obj) throws UiObjectNotFoundException {
         if (obj.toUiObject2() == null) {
             return device.findObject(obj.toUiSelector()).click();
+        } else {
+            obj.toUiObject2().click();
+            return true;
+        }
+    }
+
+    /**
+     * Performs a click at the provided gravity of the visible bounds of the UI element represented by this UiObject.
+     *
+     * @param obj the target ui object.
+     * @param gravityX x side gravity
+     * @param gravityY y side gravity
+     * @return true id successful else false
+     * @throws UiObjectNotFoundException
+     */
+    @Override
+    public boolean click(Selector obj, float gravityX, float gravityY) throws UiObjectNotFoundException {
+        if (obj.toUiObject2() == null) {
+            return new MesmerUiObject(device.findObject(obj.toUiSelector()), device).click(gravityX, gravityY);
         } else {
             obj.toUiObject2().click();
             return true;
