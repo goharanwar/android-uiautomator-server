@@ -437,7 +437,7 @@ public interface AutomatorService {
      * @throws UiObjectNotFoundException
      */
     @JsonRpcErrors({@JsonRpcError(exception = UiObjectNotFoundException.class, code = ERROR_CODE_BASE - 2)})
-    boolean click(Selector obj, float gravityX, float gravityY) throws UiObjectNotFoundException;
+    ClickResponse click(Selector obj, float gravityX, float gravityY) throws UiObjectNotFoundException;
 
     /**
      * Clicks the bottom and right corner or top and left corner of the UI element

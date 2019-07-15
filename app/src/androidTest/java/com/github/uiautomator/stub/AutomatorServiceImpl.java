@@ -894,12 +894,14 @@ public class AutomatorServiceImpl implements AutomatorService {
      * @throws UiObjectNotFoundException
      */
     @Override
-    public boolean click(Selector obj, float gravityX, float gravityY) throws UiObjectNotFoundException {
+    public ClickResponse click(Selector obj, float gravityX, float gravityY) throws UiObjectNotFoundException {
         if (obj.toUiObject2() == null) {
             return new MesmerUiObject(device.findObject(obj.toUiSelector()), device).click(gravityX, gravityY);
         } else {
+            ClickResponse response = new ClickResponse();
             obj.toUiObject2().click();
-            return true;
+            response.setSuccess(true);
+            return response;
         }
     }
 

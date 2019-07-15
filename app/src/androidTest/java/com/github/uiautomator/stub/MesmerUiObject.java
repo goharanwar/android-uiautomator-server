@@ -34,8 +34,9 @@ public class MesmerUiObject {
      * @throws UiObjectNotFoundException
      * @since API Level 16
      */
-    public boolean click(float gravityX, float gravityY) throws UiObjectNotFoundException {
+    public ClickResponse click(float gravityX, float gravityY) throws UiObjectNotFoundException {
 
+        ClickResponse result = new ClickResponse();
         AccessibilityNodeInfo node = null;
         try {
             node = findAccessibilityNodeInfo(Configurator.getInstance().getWaitForSelectorTimeout());
@@ -47,18 +48,22 @@ public class MesmerUiObject {
 
             int y = rect.top + (int)Math.floor(rect.height() * gravityY);
             int x = rect.left + (int)Math.floor(rect.width() * gravityX);
+            result.setX(x);
+            result.setY(y);
 
             Log.d("Going to tap on (" + x + ", " + y + ")");
 
-            return MesmerInteractionController.getInteractionController(uiDevice).clickAndSync(x, y,
+            boolean clickSuccess = MesmerInteractionController.getInteractionController(uiDevice).clickAndSync(x, y,
                     Configurator.getInstance().getActionAcknowledgmentTimeout());
+            result.setSuccess(clickSuccess);
+
         }  catch (UiObjectNotFoundException e) {
             throw e;
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        return false;
+        return result;
     }
 
     private AccessibilityNodeInfo findAccessibilityNodeInfo(long timeout) throws Exception {
