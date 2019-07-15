@@ -24,6 +24,8 @@
 package com.github.uiautomator.stub;
 
 import android.app.UiAutomation;
+import android.media.AudioManager;
+import android.media.SoundPool;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.RemoteException;
@@ -64,6 +66,8 @@ public class AutomatorServiceImpl implements AutomatorService {
 
     private final HashSet<String> watchers = new HashSet<String>();
     private final ConcurrentHashMap<String, UiObject> uiObjects = new ConcurrentHashMap<String, UiObject>();
+    private SoundPool soundPool = new SoundPool(100, AudioManager.STREAM_MUSIC,0);
+
 
     private UiDevice device;
     private UiAutomation uiAutomation;
@@ -71,6 +75,15 @@ public class AutomatorServiceImpl implements AutomatorService {
     public AutomatorServiceImpl() {
         this.uiAutomation = InstrumentationRegistry.getInstrumentation().getUiAutomation();
         this.device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
+
+
+        // 音频加载完播放
+        soundPool.setOnLoadCompleteListener(new SoundPool.OnLoadCompleteListener() {
+            @Override
+            public void onLoadComplete(SoundPool soundPool, int sampleId, int status) {
+                soundPool.play(sampleId,1,1,1,0,1);
+            }
+        });
 
         // Reset Configurator Wait Timeout
         Configurator configurator = Configurator.getInstance();
@@ -83,6 +96,21 @@ public class AutomatorServiceImpl implements AutomatorService {
         // default uiAutomation serviceInfo.eventTypes is -1
         // I guess this might be watch all eventTypes
         uiAutomation.setOnAccessibilityEventListener(new AccessibilityEventListener(device, watchers));
+    }
+
+    /**
+     * It's to play a section music to test
+     * @return
+     */
+    @Override
+    public boolean playSound(String path){
+        try {
+            soundPool.load(path, 1);
+        } catch (Exception e)
+        {
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -236,7 +264,8 @@ public class AutomatorServiceImpl implements AutomatorService {
         device.setCompressedLayoutHeirarchy(compressed);
         try {
             ByteArrayOutputStream os = new ByteArrayOutputStream();
-            device.dumpWindowHierarchy(os);
+            AccessibilityNodeInfoDumper.dumpWindowHierarchy(device, os);
+//            device.dumpWindowHierarchy(os);
             os.close();
             return os.toString("UTF-8");
         } catch (FileNotFoundException e) {
@@ -781,8 +810,9 @@ public class AutomatorServiceImpl implements AutomatorService {
     @Override
     public ObjInfo objInfo(Selector obj) throws UiObjectNotFoundException {
         try {
-             if (obj.toUiObject2() != null) {
-                 return ObjInfo.getObjInfo(obj.toUiObject2());
+             final UiObject2 obj2 = obj.toUiObject2(); // to avoid a race condition
+             if (obj2 != null) {
+                 return ObjInfo.getObjInfo(obj2);
              }
         } catch(StaleObjectException e){
             Log.d("objInfo got StaleObjectException " + e);
