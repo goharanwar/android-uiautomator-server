@@ -30,6 +30,7 @@ import android.support.test.uiautomator.UiDevice;
 import android.support.test.uiautomator.UiObject2;
 import android.support.test.uiautomator.UiSelector;
 
+import java.util.List;
 import java.util.regex.Pattern;
 
 public class Selector {
@@ -58,6 +59,8 @@ public class Selector {
     private String _resourceIdMatches;
     private int _index;
     private int _instance;
+    private Point position;
+    private Dimension size;
     private Selector[] _childOrSiblingSelector = new Selector[]{};
     private String[] _childOrSibling = new String[]{};
 
@@ -314,6 +317,36 @@ public class Selector {
         return obj2;
     }
 
+
+    public UiObject2 toClosestUiObject2() {
+
+        if(position != null && size != null && toBySelector() != null) {
+
+            List<UiObject2> objects = device.findObjects(toBySelector());
+
+            if (objects != null && objects.size() > 0) {
+
+                float minArea = 0.0F;
+                UiObject2 closestObject = null;
+                for (UiObject2 object : objects) {
+                    Rect rect = Rect.from(object.getVisibleBounds());
+                    Rect sourceRect = Rect.from(position, size);
+                    float area = Rect.getOverlappingArea(sourceRect, rect);
+                    if (minArea < area) {
+                        minArea = area;
+                        closestObject = object;
+                        if (minArea == 100) {
+                            return closestObject;
+                        }
+                    }
+                }
+                return closestObject;
+            }
+        }
+
+        return null;
+    }
+
     public Selector deepSelector() {
         if (this.getChildOrSibling().length == 0) {
             return this;
@@ -558,5 +591,21 @@ public class Selector {
 
     public void setChildOrSibling(String[] _childOrSibling) {
         this._childOrSibling = _childOrSibling;
+    }
+
+    public Point getPosition() {
+        return position;
+    }
+
+    public void setPosition(Point position) {
+        this.position = position;
+    }
+
+    public Dimension getSize() {
+        return size;
+    }
+
+    public void setSize(Dimension size) {
+        this.size = size;
     }
 }

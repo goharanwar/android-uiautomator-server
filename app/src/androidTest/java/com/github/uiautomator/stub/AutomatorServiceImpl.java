@@ -48,10 +48,11 @@ import android.view.MotionEvent;
 import android.view.Surface;
 
 import com.github.uiautomator.ToastHelper;
+import com.github.uiautomator.mesmer.ClickResponse;
+import com.github.uiautomator.mesmer.MesmerDeviceInteraction;
+import com.github.uiautomator.mesmer.MesmerInteractionController;
 import com.github.uiautomator.stub.watcher.ClickUiObjectWatcher;
 import com.github.uiautomator.stub.watcher.PressKeysWatcher;
-import com.googlecode.jsonrpc4j.JsonRpcError;
-import com.googlecode.jsonrpc4j.JsonRpcErrors;
 import com.mesmer.tensorflow.lite.classification.Classifier;
 import com.mesmer.util.Logger;
 
@@ -895,14 +896,7 @@ public class AutomatorServiceImpl implements AutomatorService {
      */
     @Override
     public ClickResponse click(Selector obj, float gravityX, float gravityY) throws UiObjectNotFoundException {
-        if (obj.toUiObject2() == null) {
-            return new MesmerUiObject(device.findObject(obj.toUiSelector()), device).click(gravityX, gravityY);
-        } else {
-            ClickResponse response = new ClickResponse();
-            obj.toUiObject2().click();
-            response.setSuccess(true);
-            return response;
-        }
+        return MesmerDeviceInteraction.getInstance(device).click(obj, gravityX, gravityY);
     }
 
     /**

@@ -1,4 +1,4 @@
-package com.github.uiautomator.stub;
+package com.github.uiautomator.mesmer;
 
 import android.support.test.uiautomator.UiDevice;
 

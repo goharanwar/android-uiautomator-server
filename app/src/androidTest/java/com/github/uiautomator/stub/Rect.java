@@ -46,6 +46,30 @@ public class Rect {
         return rect;
     }
 
+    public static Rect from(Point position, Dimension size) {
+        Rect rect = new Rect();
+        rect._top = position.getY();
+        rect._bottom = position.getY() + size.getHeight();
+        rect._left = position.getX();
+        rect._right = position.getX() + size.getWidth();
+
+        return rect;
+    }
+
+    public static float getOverlappingArea(Rect sourceRect, Rect targetRect) {
+        long xA = Math.max(sourceRect._left, targetRect._left);
+        long yA = Math.max(sourceRect._top, targetRect._top);
+        long xB = Math.min(sourceRect._right, targetRect._right);
+        long yB = Math.min(sourceRect._bottom, targetRect._bottom);
+
+        long intersectionArea = Math.max(0, (xB - xA )) * Math.max(0, (yB - yA));
+
+        long boxAArea = (sourceRect._right - sourceRect._left) * (sourceRect._bottom - sourceRect._top);
+        long boxBArea = (targetRect._right - targetRect._left) * (targetRect._bottom - targetRect._top);
+
+        return  (intersectionArea / (float) (boxAArea + boxBArea - intersectionArea)) * 100;
+    }
+
     public int getTop() {
         return _top;
     }

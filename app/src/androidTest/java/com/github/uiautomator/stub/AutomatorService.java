@@ -26,6 +26,7 @@ package com.github.uiautomator.stub;
 import android.os.RemoteException;
 import android.support.test.uiautomator.UiObjectNotFoundException;
 
+import com.github.uiautomator.mesmer.ClickResponse;
 import com.googlecode.jsonrpc4j.JsonRpcError;
 import com.googlecode.jsonrpc4j.JsonRpcErrors;
 
