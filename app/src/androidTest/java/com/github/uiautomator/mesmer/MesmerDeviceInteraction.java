@@ -46,6 +46,19 @@ public class MesmerDeviceInteraction {
 
     }
 
+    public boolean sendText(String text) {
+
+        boolean result = false;
+
+        try {
+            result = MesmerInteractionController.getInteractionController(device).sendText(text);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return result;
+    }
+
     private ClickResponse click(UiObject2 uiObject2, float gravityX, float gravityY) {
 
         Point tapLocation = getTapLocation(uiObject2.getVisibleBounds(), gravityX, gravityY);

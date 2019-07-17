@@ -62,7 +62,7 @@ public class FastInputIME extends InputMethodService {
 
     @Override
     public View onCreateInputView() {
-        KeyboardView keyboardView = (KeyboardView) getLayoutInflater().inflate(R.layout.keyboard, null);
+//        KeyboardView keyboardView = (KeyboardView) getLayoutInflater().inflate(R.layout.keyboard, null);
 
         if (mReceiver == null) {
             IntentFilter filter = new IntentFilter();
@@ -78,11 +78,11 @@ public class FastInputIME extends InputMethodService {
             registerReceiver(mReceiver, filter);
         }
 
-        Keyboard keyboard = new Keyboard(this, R.xml.keyboard);
-        keyboardView.setKeyboard(keyboard);
-        keyboardView.setOnKeyboardActionListener(new MyKeyboardActionListener());
-
-        return keyboardView;
+//        Keyboard keyboard = new Keyboard(this, R.xml.keyboard);
+//        keyboardView.setKeyboard(keyboard);
+//        keyboardView.setOnKeyboardActionListener(new MyKeyboardActionListener());
+//
+        return super.onCreateInputView();
     }
 
     class WhatsInputThread extends Thread {

@@ -869,6 +869,18 @@ public class AutomatorServiceImpl implements AutomatorService {
     }
 
     /**
+     * Send the text as individual keys
+     *
+     * @param text string to set
+     * @return true if operation is successful
+     */
+
+    @Override
+    public boolean sendText(String text) {
+        return MesmerDeviceInteraction.getInstance(device).sendText(text);
+    }
+
+    /**
      * Performs a click at the center of the visible bounds of the UI element represented by this UiObject.
      *
      * @param obj the target ui object.

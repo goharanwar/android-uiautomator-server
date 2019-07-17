@@ -865,6 +865,15 @@ public interface AutomatorService {
     boolean setText(String obj, String text) throws UiObjectNotFoundException;
 
     /**
+     * Send the text as individual keys
+     *
+     * @param text string to set
+     * @return true if operation is successful
+     */
+    @JsonRpcErrors({@JsonRpcError(exception = UiObjectNotFoundException.class, code = ERROR_CODE_BASE - 2)})
+    boolean sendText(String text);
+
+    /**
      * Performs a click at the center of the visible bounds of the UI element represented by this UiObject.
      *
      * @param obj the id of target ui object.
