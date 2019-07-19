@@ -97,6 +97,16 @@ public interface AutomatorService {
     boolean click(int x, int y);
 
     /**
+     * Perform a long click at arbitrary coordinates specified by the user.
+     *
+     * @param x coordinate
+     * @param y coordinate
+     * @param duration long click duration
+     * @return true if the click succeeded else false
+     */
+    boolean longClick(int x, int y, int duration);
+
+    /**
      * Performs a swipe from one coordinate to another coordinate. You can control the smoothness and speed of the swipe by specifying the number of steps. Each step execution is throttled to 5 milliseconds per step, so for a 100 steps, the swipe will take around 0.5 seconds to complete.
      *
      * @param startX X-axis value for the starting coordinate
@@ -474,6 +484,19 @@ public interface AutomatorService {
      */
     @JsonRpcErrors({@JsonRpcError(exception = UiObjectNotFoundException.class, code = ERROR_CODE_BASE - 2)})
     boolean longClick(Selector obj) throws UiObjectNotFoundException;
+
+    /**
+     * Long clicks at the gravity of the visible bounds of the UI element
+     *
+     * @param obj the target ui object.
+     * @param duration duration for long tap
+     * @param gravityX gravity on x side
+     * @param gravityY gravity on x side
+     * @return ClickResponse with tapped position and success result
+     * @throws UiObjectNotFoundException
+     */
+    @JsonRpcErrors({@JsonRpcError(exception = UiObjectNotFoundException.class, code = ERROR_CODE_BASE - 2)})
+    ClickResponse longClick(Selector obj, int duration, float gravityX, float gravityY) throws UiObjectNotFoundException;
 
     /**
      * Long clicks bottom and right corner of the UI element
