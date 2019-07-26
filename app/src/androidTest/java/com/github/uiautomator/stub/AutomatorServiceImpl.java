@@ -50,7 +50,6 @@ import android.view.Surface;
 import com.github.uiautomator.ToastHelper;
 import com.github.uiautomator.mesmer.ClickResponse;
 import com.github.uiautomator.mesmer.MesmerDeviceInteraction;
-import com.github.uiautomator.mesmer.MesmerInteractionController;
 import com.github.uiautomator.stub.watcher.ClickUiObjectWatcher;
 import com.github.uiautomator.stub.watcher.PressKeysWatcher;
 import com.mesmer.tensorflow.lite.classification.Classifier;
@@ -242,114 +241,7 @@ public class AutomatorServiceImpl implements AutomatorService {
 
 
     public boolean fastSwipe(int startX, int startY, int endX, int endY) {
-
-        boolean ret = false;
-
-        int totalDistanceX = endX - startX;
-        int totalDistanceY = endY - startY;
-        int currentPositionX = startX;
-        int currentPositionY = startY;
-        int remainingDistanceX = totalDistanceX;
-        int remainingDistanceY = totalDistanceY;
-
-        try {
-
-            MesmerInteractionController interactionController = MesmerInteractionController.getInteractionController(device);
-
-            // first touch starts exactly at the point requested
-            ret = interactionController.touchDown(startX, startY);
-
-            boolean toExecuteTouchMove = true;
-            int step = 0;
-
-            do {
-
-                int xPosition;
-                int yPosition;
-                step++;
-
-                int maxDistance = Math.max(Math.abs(remainingDistanceX), Math.abs(remainingDistanceY));
-
-                int factor = (maxDistance / 300) + 2;
-
-                if(factor < 3) {
-                    factor = 3;
-                }
-
-                android.util.Log.i(TAG, "calculatedFactor = " + factor);
-
-                int xDistance = (remainingDistanceX / factor);
-                int yDistance = (remainingDistanceY / factor);
-
-                remainingDistanceX = remainingDistanceX - xDistance;
-                remainingDistanceY = remainingDistanceY - yDistance;
-
-                maxDistance = Math.max(Math.abs(xDistance), Math.abs(yDistance));
-
-                if (maxDistance < 2) {
-                    android.util.Log.i(TAG, "Max distance is less than 2");
-                    System.out.println("");
-                    break;
-                }
-
-                if(maxDistance < 3) {
-
-                    android.util.Log.i(TAG, "Max distance is less than 5");
-                    toExecuteTouchMove = false;
-                    xPosition = endX;
-                    yPosition = endY;
-
-                } else {
-
-                    xPosition = currentPositionX + xDistance;
-                    yPosition = currentPositionY + yDistance;
-                }
-
-
-                android.util.Log.i(TAG, "Step = " + step + ", Touch Move x = " + xPosition + ", y = " + yPosition);
-
-                ret &= interactionController.touchMove(xPosition, yPosition);
-
-                currentPositionX = xPosition;
-                currentPositionY = yPosition;
-
-                if (ret == false)
-                    break;
-                // set some known constant delay between steps as without it this
-                // become completely dependent on the speed of the system and results
-                // may vary on different devices. This guarantees at minimum we have
-                // a preset delay.
-
-                SystemClock.sleep(5);
-
-                if (step > 100) {
-                    android.util.Log.e(TAG, "Step count increased from 100");
-                    toExecuteTouchMove = false;
-                }
-
-            } while (toExecuteTouchMove);
-
-            SystemClock.sleep(50);
-
-            ret &= interactionController.touchUp(endX, endY);
-
-//            SystemClock.sleep(wait2);
-//
-//            ret &= interactionController.touchDown((startX + endX) / 2, (startY + endX ) /2 );
-//
-//            SystemClock.sleep(wait3);
-//
-//            ret &= interactionController.touchCancel((startX + endX) / 2, (startY + endX ) /2);
-
-
-
-        } catch (Exception e) {
-            android.util.Log.e(TAG, e.getMessage());
-            e.printStackTrace();
-        }
-
-        return(ret);
-
+        return MesmerDeviceInteraction.getInstance(device).fastSwipe(startX, startY, endX, endY);
     }
 
     @Override
@@ -839,11 +731,10 @@ public class AutomatorServiceImpl implements AutomatorService {
     @Override
     public void clearTextField(Selector obj) throws UiObjectNotFoundException {
         try {
-            obj.toUiObject2().clear();
+            obj.toClosestUiObject2().clear();
         } catch (NullPointerException | StaleObjectException e) {
-            device.findObject(obj.toUiSelector()).clearTextField();
+            throw new UiObjectNotFoundException(obj.toBySelector().toString());
         }
-
     }
 
     /**
@@ -873,11 +764,11 @@ public class AutomatorServiceImpl implements AutomatorService {
     @Override
     public boolean setText(Selector obj, String text) throws UiObjectNotFoundException {
         try {
-            obj.toUiObject2().click();
-            obj.toUiObject2().setText(text);
+            obj.toClosestUiObject2().click();
+            obj.toClosestUiObject2().setText(text);
             return true;
         } catch (NullPointerException | StaleObjectException e) {
-            return device.findObject(obj.toUiSelector()).setText(text);
+            throw new UiObjectNotFoundException(obj.toBySelector().toString());
         }
     }
 
